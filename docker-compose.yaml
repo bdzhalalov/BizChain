@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: biz_chain-nginx
+    build:
+      context: docker
+      dockerfile: nginx/Dockerfile
+    volumes:
+      - ./:/var/www/app
+    ports:
+      - "8080:80"
+    networks:
+      - biz_chain_network
+
+  app:
+    container_name: biz_chain-app
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ./:/var/www/app
+    depends_on:
+      - db
+    networks:
+      - biz_chain_network
+
+  db:
+    container_name: biz_chain-db
+    image: mysql:8.4.3
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=biz_chain
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - biz_chain_network
+
+  artisan:
+    container_name: biz_artisan
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ./:/var/www/app
+    entrypoint: ['php', '/var/www/app/artisan']
+    networks:
+      - biz_chain_network
+
+volumes:
+  mysql-data:
+    driver: local
+networks:
+  biz_chain_network:
+    driver: bridge
