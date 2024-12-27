@@ -22,4 +22,9 @@ class Order extends Model
     {
         return $this->belongsToMany(Product::class)->withPivot('quantity', 'price');
     }
+
+    public function storage()
+    {
+        return $this->belongsTo(Storage::class);
+    }
 }
