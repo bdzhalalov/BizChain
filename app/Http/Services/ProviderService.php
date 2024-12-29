@@ -2,10 +2,15 @@
 
 namespace App\Http\Services;
 
+use App\Exceptions\NotFoundException;
+use App\Http\Resources\ProviderResource;
 use App\Models\Batch;
 use App\Models\Product;
+use App\Models\Provider;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection as Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ProviderService
 {
@@ -16,7 +21,42 @@ class ProviderService
         $this->categoryService = new CategoryService();
     }
 
-    public function purchaseProducts(array $data)
+    /**
+     * @return Collection
+     */
+    public function getListOfProviders(): Collection
+    {
+        Log::debug("Start getting list of providers");
+
+        $response = Provider::all();
+
+        return ProviderResource::collection($response);
+    }
+
+    /**
+     * @param int $providerId
+     * @return ProviderResource
+     * @throws NotFoundException
+     */
+    public function getProviderById(int $providerId): ProviderResource
+    {
+        Log::debug("Start getting provider by id");
+
+        $provider = Provider::where('id', $providerId)->first();
+
+        if (empty($provider)) {
+            throw NotFoundException::getInstance("Provider with id $providerId not found");
+        }
+
+        return new ProviderResource($provider);
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     * @throws Throwable
+     */
+    public function purchaseProducts(array $data): void
     {
         Log::debug(
             "Start purchase products from provider",
@@ -109,7 +149,7 @@ class ProviderService
             $this->makePayment();
 
             DB::commit();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             DB::rollBack();
             throw $exception;
         }
