@@ -15,10 +15,12 @@ use Throwable;
 class ProviderService
 {
     protected CategoryService $categoryService;
+    protected StorageService $storageService;
 
     public function __construct()
     {
         $this->categoryService = new CategoryService();
+        $this->storageService = new StorageService();
     }
 
     /**
@@ -70,6 +72,9 @@ class ProviderService
             //check provider existence
             $this->getProviderById($data['provider_id']);
 
+            //check storage existence
+            $this->storageService->getStorageById($data['storage_id']);
+
             //Creating new batch
             $batch = Batch::create(['provider_id' => $data['provider_id']]);
 
@@ -114,11 +119,11 @@ class ProviderService
                 }
                 $productQuantities[$product['id']] += $additionalProductInfo[$product['name']]['quantity'];
             }
-            DB::table('batch_products')->insert($batchProducts);
+            DB::table('batch_product')->insert($batchProducts);
 
             // linking products with storage
             // get existing products in the storage
-            $existingProducts = DB::table('storage_products')->
+            $existingProducts = DB::table('storage_product')->
                 where('storage_id', $data['storage_id'])->
                 whereIn('product_id', array_keys($productQuantities))->
                 get()->
@@ -128,7 +133,7 @@ class ProviderService
             $storageProducts = [];
             foreach ($productQuantities as $productId => $quantity) {
                 if (isset($existingProducts[$productId])) {
-                    DB::table('storage_products')
+                    DB::table('storage_product')
                         ->where('storage_id', $data['storage_id'])
                         ->where('product_id', $productId)
                         ->update([
@@ -146,7 +151,7 @@ class ProviderService
             }
 
             if (!empty($storageProducts)) {
-                DB::table('storage_products')->insert($storageProducts);
+                DB::table('storage_product')->insert($storageProducts);
             }
 
             $this->makePayment();

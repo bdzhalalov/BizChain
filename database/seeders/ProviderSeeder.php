@@ -17,8 +17,7 @@ class ProviderSeeder extends Seeder
     {
         $provider = Provider::factory()->count(5)->create();
         foreach ($provider as $item) {
-            $parentCategory = Category::factory()->withProvider($item)->create();
-            Category::factory()->withParent($parentCategory)->create();
+            Category::factory()->withProvider($item)->create();
         }
     }
 }

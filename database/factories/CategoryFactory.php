@@ -33,15 +33,4 @@ class CategoryFactory extends Factory
             ];
         });
     }
-
-    public function withParent(Category $category)
-    {
-        return $this->state(function (array $attributes) use ($category) {
-            return [
-                'name' => $category->name . '_child',
-                'parent_id' => $category->id,
-                'provider_id' => $category->provider_id,
-            ];
-        });
-    }
 }
