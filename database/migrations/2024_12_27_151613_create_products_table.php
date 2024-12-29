@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->decimal('price', 10);
             $table->timestamps();
+            $table->unique(['name', 'category_id'], 'products_name_category_unique');
         });
     }
 
