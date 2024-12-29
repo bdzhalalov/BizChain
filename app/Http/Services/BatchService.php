@@ -165,14 +165,14 @@ class BatchService
             $ids = implode(',', $ids);
 
             DB::statement("
-            UPDATE storage_product
-            SET
-                quantity = CASE
-                    $cases
-                END,
-            updated_at = NOW()
-            WHERE storage_id = $storageId AND product_id IN ($ids)
-        ");
+                UPDATE storage_product
+                SET
+                    quantity = CASE
+                        $cases
+                    END,
+                updated_at = NOW()
+                WHERE storage_id = $storageId AND product_id IN ($ids)
+            ");
         });
     }
 }
