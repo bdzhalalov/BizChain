@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
+use App\Http\Requests\BatchRefundRequest;
 use App\Http\Resources\BatchResource;
 use App\Http\Services\BatchService;
 use Illuminate\Http\JsonResponse;
@@ -65,11 +67,50 @@ class BatchController extends Controller
         }
     }
 
+    /**
+     * @param int $providerId
+     * @param int $batchId
+     * @return void
+     */
     public function getBatchProducts(int $providerId, int $batchId): void
     {
         // The method is needed to receive the batch products,
         // so that later we can know the product IDs for a partial refund
         // Now this method is created to demonstrate where the product IDs were obtained from when performing a refund
         //TODO: add method realization
+    }
+
+    /**
+     * @param BatchRefundRequest $request
+     * @param int $providerId
+     * @param int $batchId
+     * @return JsonResponse
+     */
+    public function refund(BatchRefundRequest $request, int $providerId, int $batchId): JsonResponse
+    {
+        try {
+            $validatedData = $request->validated();
+
+            $validatedData['provider_id'] = $providerId;
+            $validatedData['batch_id'] = $batchId;
+
+            $this->batchService->refundProductsToProvider($validatedData);
+
+            return response()->json(['message' => 'Products refunded successfully.']);
+        } catch (BadRequestException $exception) {
+            return response()->json($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (NotFoundException $exception) {
+            return response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (\Throwable $exception) {
+            Log::error(
+                "Error while refunding products",
+                [
+                    'provider_id' => $providerId,
+                    'batch_id' => $batchId,
+                    'exception' => $exception->getMessage()
+                ]
+            );
+            return response()->json(['Internal server error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
