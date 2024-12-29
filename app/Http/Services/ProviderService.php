@@ -67,6 +67,9 @@ class ProviderService
         try {
             DB::beginTransaction();
 
+            //check provider existence
+            $this->getProviderById($data['provider_id']);
+
             //Creating new batch
             $batch = Batch::create(['provider_id' => $data['provider_id']]);
 

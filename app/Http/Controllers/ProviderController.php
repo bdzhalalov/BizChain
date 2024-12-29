@@ -61,21 +61,26 @@ class ProviderController extends Controller
 
     /**
      * @param ProviderPurchaseRequest $request
+     * @param int $providerId
      * @return JsonResponse
      */
-    public function purchase(ProviderPurchaseRequest $request): JsonResponse
+    public function purchase(ProviderPurchaseRequest $request, int $providerId): JsonResponse
     {
         try {
             $validatedData = $request->validated();
 
+            $validatedData['provider_id'] = $providerId;
+
             $this->providerService->purchaseProducts($validatedData);
 
             return response()->json(['message' => 'Products purchased successfully']);
+        } catch (NotFoundException $exception) {
+            return response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
         } catch (\Throwable $exception) {
             Log::error(
                 "Error while purchasing products from provider",
                 [
-                    'provider_id' => $validatedData['provider_id'],
+                    'provider_id' => $providerId,
                     'exception' => $exception->getMessage()
                 ]
             );
