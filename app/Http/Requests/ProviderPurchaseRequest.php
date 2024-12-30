@@ -22,7 +22,7 @@ class ProviderPurchaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'storage_id' => ['required', 'integer', 'exists:storages,id'],
+            'storage_id' => ['required', 'integer'],
             'products' => ['required', 'array'],
             'products.*.name' => ['required', 'string', 'max:255'],
             'products.*.category' => ['required', 'string', 'max:255'],
