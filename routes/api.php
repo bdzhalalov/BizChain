@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProviderController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +24,6 @@ Route::middleware('api_auth')->prefix('v1')->group(function () {
             });
         });
     });
+
+    Route::get('products', [ProductController::class, 'list']);
 });
