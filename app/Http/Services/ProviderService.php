@@ -123,7 +123,7 @@ class ProviderService
 
             // linking products with storage
             // get existing products in the storage
-            $existingProducts = DB::table('storage_product')->
+            $existingProducts = DB::table('product_storage')->
                 where('storage_id', $data['storage_id'])->
                 whereIn('product_id', array_keys($productQuantities))->
                 get()->
@@ -133,7 +133,7 @@ class ProviderService
             $storageProducts = [];
             foreach ($productQuantities as $productId => $quantity) {
                 if (isset($existingProducts[$productId])) {
-                    DB::table('storage_product')
+                    DB::table('product_storage')
                         ->where('storage_id', $data['storage_id'])
                         ->where('product_id', $productId)
                         ->update([
@@ -151,7 +151,7 @@ class ProviderService
             }
 
             if (!empty($storageProducts)) {
-                DB::table('storage_product')->insert($storageProducts);
+                DB::table('product_storage')->insert($storageProducts);
             }
 
             $this->makePayment();

@@ -19,4 +19,14 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function batches()
+    {
+        return $this->belongsToMany(Batch::class)->withPivot(['quantity', 'purchase_price']);
+    }
+
+    public function storages()
+    {
+        return $this->belongsToMany(Storage::class)->withPivot(['quantity']);
+    }
 }

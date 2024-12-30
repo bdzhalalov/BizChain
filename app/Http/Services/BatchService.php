@@ -118,7 +118,7 @@ class BatchService
                 ->delete();
 
             // delete products from storage
-            DB::table('storage_product')->
+            DB::table('product_storage')->
             where('storage_id', $storageId)->
             whereIn('product_id', $batch->products->pluck('id'))->
             update([
@@ -140,7 +140,7 @@ class BatchService
     {
         DB::transaction(function () use ($batch, $products, $storageId) {
 
-            $storageProducts = DB::table('storage_product')->
+            $storageProducts = DB::table('product_storage')->
             where('storage_id', $storageId)->
             whereIn('product_id', collect($products)->pluck('id'))->
             get(['product_id', 'quantity'])->keyBy('product_id');
@@ -165,7 +165,7 @@ class BatchService
             $ids = implode(',', $ids);
 
             DB::statement("
-                UPDATE storage_product
+                UPDATE product_storage
                 SET
                     quantity = CASE
                         $cases
