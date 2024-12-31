@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\BatchRefundRequest;
+use App\Http\Resources\BatchProfitResource;
 use App\Http\Resources\BatchResource;
 use App\Http\Services\BatchService;
 use Illuminate\Http\JsonResponse;
@@ -78,6 +79,30 @@ class BatchController extends Controller
         // so that later we can know the product IDs for a partial refund
         // Now this method is created to demonstrate where the product IDs were obtained from when performing a refund
         //TODO: add method realization
+    }
+
+    /**
+     * @param int $providerId
+     * @param int $batchId
+     * @return JsonResponse|BatchProfitResource
+     */
+    public function profit(int $providerId, int $batchId): JsonResponse|BatchProfitResource
+    {
+        try {
+           return $this->batchService->getProfitPerBatch($batchId, $providerId);
+        } catch (NotFoundException $exception) {
+            return response()->json($exception->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (\Throwable $exception) {
+            Log::error(
+                "Error while getting batch's profit",
+                [
+                    'provider_id' => $providerId,
+                    'batch_id' => $batchId,
+                    'exception' => $exception->getMessage()
+                ]
+            );
+            return response()->json(['Internal server error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

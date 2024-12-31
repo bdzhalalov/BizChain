@@ -4,6 +4,7 @@ namespace App\Http\Services;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
+use App\Http\Resources\BatchProfitResource;
 use App\Http\Resources\BatchResource;
 use App\Models\Batch;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection as Collection;
@@ -102,6 +103,36 @@ class BatchService
         } else {
             $this->performPartialRefund($batch, $data['products'], $data['storage_id']);
         }
+    }
+
+    /**
+     * @param int $batchId
+     * @param int $providerId
+     * @return BatchProfitResource
+     * @throws NotFoundException
+     */
+    public function getProfitPerBatch(int $batchId, int $providerId): BatchProfitResource
+    {
+        // check provider and batch existence
+        $this->getBatchById($providerId, $batchId);
+
+        // get profit per batch
+        $profit = DB::table('batch_product')
+            ->join('batches', 'batch_product.batch_id', '=', 'batches.id')
+            ->join('products', 'batch_product.product_id', '=', 'products.id')
+            ->select(
+                DB::raw('SUM(batch_product.quantity * products.price) as total_sales'),
+                DB::raw('SUM(batch_product.quantity * batch_product.purchase_price) as total_cost'),
+                DB::raw(
+                    'SUM(batch_product.quantity * products.price)
+                    - SUM(batch_product.quantity * batch_product.purchase_price) as profit'
+                )
+            )
+            ->where('batch_product.batch_id', $batchId)
+            ->groupBy('batches.id')
+            ->first();
+
+        return new BatchProfitResource($profit);
     }
 
     /**

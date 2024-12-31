@@ -21,6 +21,7 @@ Route::middleware('api_auth')->prefix('v1')->group(function () {
                 Route::group(['prefix' => '{batchId}'], function () {
                     Route::get('/', [BatchController::class, 'getById']);
                     Route::get('/products', [BatchController::class, 'getBatchProducts']);
+                    Route::get('/profit', [BatchController::class, 'profit']);
                     Route::post('/refund', [BatchController::class, 'refund']);
                 });
             });
