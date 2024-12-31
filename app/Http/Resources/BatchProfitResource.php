@@ -15,9 +15,9 @@ class BatchProfitResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'total_purchase_price' => $this->total_cost,
-            'total_price' => $this->total_sales,
-            'profit' => $this->profit,
+            'total_purchase_price' => (int) $this->total_cost,
+            'total_price' => (int) $this->total_sales,
+            'profit' => (int) $this->profit,
         ];
     }
 }
