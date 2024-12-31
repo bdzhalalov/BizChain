@@ -146,6 +146,7 @@ class ProviderService
                         'product_id' => $productId,
                         'quantity' => $quantity,
                         'created_at' => now(),
+                        'updated_at' => now(),
                     ];
                 }
             }

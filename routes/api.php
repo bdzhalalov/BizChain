@@ -4,6 +4,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('api_auth')->prefix('v1')->group(function () {
@@ -30,5 +31,14 @@ Route::middleware('api_auth')->prefix('v1')->group(function () {
 
     Route::group(['prefix' => 'orders'], function () {
         Route::post('/', [OrderController::class, 'create']);
+    });
+
+    Route::group(['prefix' => 'storages'], function () {
+        Route::get('/', [StorageController::class, 'list']);
+
+        Route::group(['prefix' => '{storageId}'], function () {
+            Route::get('/', [StorageController::class, 'getById']);
+            Route::get('/remaining-quantity', [StorageController::class, 'getRemainingQuantity']);
+        });
     });
 });
