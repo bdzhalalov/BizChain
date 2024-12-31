@@ -315,4 +315,59 @@ class BatchApiTest extends ApiTestCase
 
         $response->assertStatus(400);
     }
+
+    /** @test */
+    public function test_can_get_profit_for_batch(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/providers/1/batches/1/profit',
+            [
+                'x-api-key' => env('API_KEY')
+            ],
+        );
+
+        $response->assertStatus(200);
+
+        $response->assertJsonStructure([
+            'total_purchase_price',
+            'total_price',
+            'profit',
+        ]);
+    }
+
+    /** @test */
+    public function test_return_forbidden_when_get_profit_per_batch_without_key(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/providers/1/batches/1/profit',
+        );
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function test_return_not_found_when_get_unexisting_profider_while_get_profit(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/providers/123/batches/1/profit',
+            [
+                'x-api-key' => env('API_KEY')
+            ],
+        );
+
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function test_return_not_found_when_get_unexisting_batch_while_get_profit(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/providers/1/batches/123/profit',
+            [
+                'x-api-key' => env('API_KEY')
+            ],
+        );
+
+        $response->assertStatus(404);
+    }
 }
