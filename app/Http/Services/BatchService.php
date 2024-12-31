@@ -115,7 +115,12 @@ class BatchService
             // delete products from batch_products
             DB::table('batch_product')
                 ->where('batch_id', $batch->id)
-                ->delete();
+                ->whereIn('product_id', $batch->products->pluck('id'))
+                ->update([
+                    //because it's full refund, it works
+                    'quantity' => 0,
+                    'updated_at' => now(),
+                ]);
 
             // delete products from storage
             DB::table('product_storage')->
@@ -145,7 +150,8 @@ class BatchService
             whereIn('product_id', collect($products)->pluck('id'))->
             get(['product_id', 'quantity'])->keyBy('product_id');
 
-            $cases = [];
+            $casesForStorage = [];
+            $casesForBatch = [];
             $ids = [];
             foreach ($products as $product) {
                 $currentQuantity = $storageProducts[$product['id']]->quantity;
@@ -157,21 +163,36 @@ class BatchService
 
                 $finalQuantity = $currentQuantity - $product['quantity'];
 
-                $cases[] = "WHEN product_id = {$product['id']} AND storage_id = $storageId THEN $finalQuantity";
+                $casesForStorage[] = "WHEN product_id = {$product['id']} AND storage_id = $storageId THEN $finalQuantity";
+                $casesForBatch[] = "WHEN product_id = {$product['id']} AND batch_id = $batch->id THEN $finalQuantity";
                 $ids[] = $product['id'];
             }
 
-            $cases = implode(' ', $cases);
+            // update products quantity in product_storage table
+            $casesForStorage = implode(' ', $casesForStorage);
             $ids = implode(',', $ids);
 
             DB::statement("
                 UPDATE product_storage
                 SET
                     quantity = CASE
-                        $cases
+                        $casesForStorage
                     END,
                 updated_at = NOW()
                 WHERE storage_id = $storageId AND product_id IN ($ids)
+            ");
+
+            // update products quantity in batch_product table
+            $casesForBatch = implode(' ', $casesForBatch);
+
+            DB::statement("
+                UPDATE batch_product
+                SET
+                    quantity = CASE
+                        $casesForBatch
+                    END,
+                updated_at = NOW()
+                WHERE batch_id = $batch->id AND product_id IN ($ids)
             ");
         });
     }

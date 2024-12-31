@@ -133,11 +133,16 @@ class BatchApiTest extends ApiTestCase
 
         $expectedQuantity = $this->productQuantity - $quantity;
 
-        $actualQuantity = DB::table('product_storage')
+        $actualQuantityForStorage = DB::table('product_storage')
             ->where('product_id', 1)
             ->first('quantity');
 
-        $this->assertEquals($expectedQuantity, $actualQuantity->quantity);
+        $actualQuantityForBatch = DB::table('batch_product')
+            ->where('product_id', 1)
+            ->first('quantity');
+
+        $this->assertEquals($expectedQuantity, $actualQuantityForStorage->quantity);
+        $this->assertEquals($expectedQuantity, $actualQuantityForBatch->quantity);
     }
 
     /** @test */
